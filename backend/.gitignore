@@ -1,0 +1,24 @@
+# Node.js
+node_modules/
+
+# Environment variable files
+.env
+
+# Ignore uploads folder for images
+uploads/
+
+# Logs
+logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE configuration files
+.vscode/
+.idea/
+
+# Ignore the build or dist folder if you have one
+/dist
+/build

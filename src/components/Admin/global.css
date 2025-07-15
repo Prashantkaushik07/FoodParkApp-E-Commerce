@@ -1,0 +1,106 @@
+/* Global CSS for Admin Panel */
+
+/* Smooth transitions for theme switch and backdrop effects */
+html, body, .container-fluid, .card.glass {
+  transition: background 0.3s ease, color 0.3s ease, backdrop-filter 0.3s ease;
+}
+
+/* Gradient heading text */
+.text-gradient {
+  background: linear-gradient(90deg, #6a11cb, #2575fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Make container-fluid transparent so main background shows through */
+.content-wrapper main .container-fluid {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+/* Glass card styles (light mode) */
+.card.glass {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  border-radius: 1rem;
+  border: none;
+}
+
+/* Icon sizing inside cards */
+.icon-wrap {
+  font-size: 2rem;
+}
+
+/* Trend arrow styles */
+.trend.up {
+  color: #28a745;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.trend.down {
+  color: #dc3545;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Recent Activity Timeline */
+.timeline {
+  list-style: none;
+  padding-left: 1rem;
+  border-left: 2px solid #ccc;
+}
+.timeline li {
+  position: relative;
+  padding: 0.5rem 0 0.5rem 1rem;
+}
+.timeline .dot {
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  background: #6a11cb;
+  border-radius: 50%;
+}
+
+/* Toggle button styling */
+.theme-toggle {
+  border: none;
+  color: inherit;
+}
+
+/* Thank-you cartoon animation */
+.thankyou-cartoon {
+  width: 150px;
+  margin-top: 1rem;
+  animation: shake 1s ease-in-out infinite;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-10px) rotate(-5deg); }
+  50%      { transform: translateX(10px) rotate(5deg); }
+  75%      { transform: translateX(-10px) rotate(-5deg); }
+}
+
+/* Dark mode overrides */
+body.dark-theme {
+  background: #121212;
+  color: #eee;
+}
+body.dark-theme .card.glass {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+}
+body.dark-theme .card.glass h5,
+body.dark-theme .card.glass h6,
+body.dark-theme .card.glass p,
+body.dark-theme .text-gradient {
+  color: #fff;
+}
+body.dark-theme .timeline .dot {
+  background: #82ca9d;
+}
