@@ -3,9 +3,35 @@ import mongoose from 'mongoose';
 const offerSchema = new mongoose.Schema({
   img: {
     type: String,
-    required: true
+    required: true,     // every offer needs an image URL
   },
   discount: {
+    type: String,
+    default: ''         // now optional
+  },
+  title: {
+    type: String,
+    default: ''         // now optional
+  },
+  desc: {
+    type: String,
+    default: ''         // now optional
+  }
+}, { _id: false });
+
+const actionSchema = new mongoose.Schema({
+  icon: {
+    type: String,
+    default: ''         // will be filled from existing DB
+  },
+  url: {
+    type: String,
+    default: ''         // admin panel only updates URL
+  }
+}, { _id: false });
+
+const dailyOfferSchema = new mongoose.Schema({
+  small: {
     type: String,
     required: true
   },
@@ -13,25 +39,20 @@ const offerSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  desc: {
+  subTitle: {
     type: String,
     required: true
+  },
+  offers: {
+    type: [offerSchema],
+    default: []
+  },
+  actions: {
+    type: [actionSchema],
+    default: []
   }
 });
 
-const actionSchema = new mongoose.Schema({
-  icon: { type: String, required: true },
-  url:  { type: String, required: true }
-});
-
-const dailyOfferSchema = new mongoose.Schema({
-  small:    { type: String, required: true },
-  title:    { type: String, required: true },
-  subTitle: { type: String, required: true },
-  offers:   { type: [offerSchema], default: [] },
-  actions:  { type: [actionSchema], default: [] }
-});
-
-// only one document in the collection
+// singleton model
 export default mongoose.models.DailyOffer ||
        mongoose.model('DailyOffer', dailyOfferSchema);

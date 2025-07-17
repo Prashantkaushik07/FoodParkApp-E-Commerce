@@ -1,49 +1,26 @@
-// src/components/BannerSlider.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Slider from 'react-slick';
-import { apiList } from '../apilist';    // ← named import
 
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 
 export default function BannerSlider() {
   const [slides, setSlides] = useState([]);
-  const [sliderTexts, setSliderTexts] = useState({});
 
-  const GET_SLIDERS = apiList.SLIDER;
-  const UPDATE_SLIDER = id => apiList.SLIDER_BY_ID(id);
+  // Direct API URL
+  const GET_SLIDERS = 'http://localhost:5000/api/slider';
 
   useEffect(() => {
     axios.get(GET_SLIDERS)
       .then(res => {
-        setSlides(res.data.sliders);
-        const initial = {};
-        res.data.sliders.forEach(s => { initial[s._id] = s.text });
-        setSliderTexts(initial);
+        const fetched = Array.isArray(res.data?.sliders)
+          ? res.data.sliders
+          : [];
+        setSlides(fetched);
       })
       .catch(err => console.error("Error fetching slider data:", err));
-  }, [GET_SLIDERS]);
-
-  const handleTextChange = (id, e) => {
-    setSliderTexts(prev => ({ ...prev, [id]: e.target.value }));
-  };
-
-  const handleSubmit = id => {
-    const newText = sliderTexts[id];
-    axios
-      .put(UPDATE_SLIDER(id), { text: newText })
-      .then(({ data }) => {
-        setSlides(prev =>
-          prev.map(s => (s._id === id ? { ...s, text: data.slider.text } : s))
-        );
-        alert('Slider text updated');
-      })
-      .catch(err => {
-        console.error('Error updating slider:', err.response || err);
-        alert('Failed to update');
-      });
-  };
+  }, []);
 
   const settings = {
     dots: false,
@@ -60,7 +37,7 @@ export default function BannerSlider() {
     customPaging: i => <button>{i + 1}</button>,
   };
 
-  if (slides.length === 0) {
+  if (!slides.length) {
     return <div>Loading banners…</div>;
   }
 
@@ -82,7 +59,7 @@ export default function BannerSlider() {
                       <div className="fp__banner_img wow fadeInLeft" data-wow-duration="1s">
                         <div className="img position-relative">
                           <img
-                            src={`http://localhost:5000/${slider.img}`} // hard-coded host
+                            src={`http://localhost:5000/${slider.img}`}
                             alt={`Slide ${slider._id}`}
                             className="img-fluid w-100 rounded-circle"
                           />
@@ -109,19 +86,6 @@ export default function BannerSlider() {
                       </div>
                     </div>
 
-                    {/* Inline editor */}
-                    <div className="col-12 mt-3">
-                      <input
-                        type="text"
-                        value={sliderTexts[slider._id] || ''}
-                        onChange={e => handleTextChange(slider._id, e)}
-                        placeholder="Enter new slider text"
-                        style={{ marginRight: 8 }}
-                      />
-                      <button onClick={() => handleSubmit(slider._id)}>
-                        Update Slider
-                      </button>
-                    </div>
                   </div>
                 </div>
               </div>

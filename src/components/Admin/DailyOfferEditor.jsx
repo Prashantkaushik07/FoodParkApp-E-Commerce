@@ -1,179 +1,181 @@
-// src/components/Admin/DailyOfferEditor.jsx
-import React, { useState, useEffect } from 'react'
-import axios from 'axios'
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 export default function DailyOfferEditor() {
-  // create 4 independent offer slots
-  const blankOffer = { img:'', discount:'', title:'', desc:'' }
-  const blankAction = { icon:'', url:'' }
+  const blankOffer = { img: '', discount: '', title: '', desc: '' };
 
   const [form, setForm] = useState({
-    small:    '',
-    title:    '',
+    small: '',
+    title: '',
     subTitle: '',
-    offers:   [ {...blankOffer}, {...blankOffer}, {...blankOffer}, {...blankOffer} ],
-    actions:  [ {...blankAction}, {...blankAction}, {...blankAction} ]
-  })
-  const [files, setFiles] = useState([null, null, null, null])
-  const [loading, setLoading] = useState(true)
+    offers: [ {...blankOffer}, {...blankOffer}, {...blankOffer}, {...blankOffer} ],
+    actions: []
+  });
+  const [files, setFiles] = useState([null, null, null, null]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     axios.get('http://localhost:5000/api/admin/daily-offer')
       .then(({ data }) => {
-        if (data.daily) {
-          const d = data.daily
-          setForm(f => ({
-            small:    d.small    || f.small,
-            title:    d.title    || f.title,
-            subTitle: d.subTitle || f.subTitle,
-            offers:   (d.offers?.length===4) ? d.offers : f.offers,
-            actions:  (d.actions?.length===3)? d.actions: f.actions
-          }))
-        }
+        const d = data.daily || {};
+        setForm({
+          small: d.small || '',
+          title: d.title || '',
+          subTitle: d.subTitle || '',
+          offers: Array.isArray(d.offers) && d.offers.length === 4
+            ? d.offers
+            : [ {...blankOffer}, {...blankOffer}, {...blankOffer}, {...blankOffer} ],
+          actions: Array.isArray(d.actions) ? d.actions : []
+        });
       })
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
+      .catch(err => console.error('Load admin daily-offer failed:', err))
+      .finally(() => setLoading(false));
+  }, []);
 
   const updateField = (key, val) =>
-    setForm(f => ({ ...f, [key]: val }))
+    setForm(f => ({ ...f, [key]: val }));
 
   const updateOffer = (i, key, val) =>
     setForm(f => {
-      const o = [...f.offers]
-      o[i] = { ...o[i], [key]: val }
-      return { ...f, offers: o }
-    })
+      const o = [...f.offers];
+      o[i] = { ...o[i], [key]: val };
+      return { ...f, offers: o };
+    });
 
   const pickFile = (i, file) =>
-    setFiles(fs => {
-      const c = [...fs]
-      c[i] = file
-      return c
-    })
-
-  const updateAction = (i, key, val) =>
-    setForm(f => {
-      const a = [...f.actions]
-      a[i] = { ...a[i], [key]: val }
-      return { ...f, actions: a }
-    })
+    setFiles(fs => { const c = [...fs]; c[i] = file; return c; });
 
   const onSubmit = async e => {
-    e.preventDefault()
-    const fd = new FormData()
-    // headings
-    fd.append('small',    form.small)
-    fd.append('title',    form.title)
-    fd.append('subTitle', form.subTitle)
-    // offers
-    form.offers.forEach((o,i) => {
-      fd.append(`offers[${i}][discount]`, o.discount)
-      fd.append(`offers[${i}][title]`,    o.title)
-      fd.append(`offers[${i}][desc]`,     o.desc)
-      if (files[i]) fd.append(`offers[${i}][img]`, files[i])
-      else          fd.append(`offers[${i}][img]`, o.img)
-    })
-    // actions
-    form.actions.forEach((a,i) => {
-      fd.append(`actions[${i}][icon]`, a.icon)
-      fd.append(`actions[${i}][url]`,  a.url)
-    })
+    e.preventDefault();
+    const jsonPayload = {
+      small: form.small,
+      title: form.title,
+      subTitle: form.subTitle,
+      offers: form.offers.map((o, i) => ({
+        discount: o.discount,
+        title: o.title,
+        desc: o.desc,
+        img: o.img
+      })),
+      actions: form.actions
+    };
+
+    const fd = new FormData();
+    fd.append('data', JSON.stringify(jsonPayload));
+    files.forEach((file, i) => {
+      if (file) fd.append('images', file);
+    });
 
     try {
-      await axios.post(
-        'http://localhost:5000/api/admin/daily-offer',
-        fd,
-        { headers:{ 'Content-Type':'multipart/form-data' } }
-      )
-      alert('Saved!')
-    } catch(err) {
-      console.error(err)
-      alert('Save failed')
+      await axios.post('http://localhost:5000/api/admin/daily-offer', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      alert('✅ Saved successfully!');
+    } catch (err) {
+      console.error('❌ Save failed:', err.response || err);
+      alert('❌ Save failed');
     }
-  }
+  };
 
-  if (loading) return <p>Loading…</p>
+  if (loading) return <p>Loading…</p>;
 
   return (
     <div className="container py-4">
-      <h2>Edit Daily Offer</h2>
-      <form onSubmit={onSubmit} className="row g-3">
-        {/* headings */}
-        {['small','title','subTitle'].map(k=>(
-          <div key={k} className="col-md-4">
-            <label className="form-label text-capitalize">{k}</label>
-            <input
-              className="form-control"
-              value={form[k]}
-              onChange={e=>updateField(k,e.target.value)}
-              required
-            />
-          </div>
-        ))}
+      <h2 className="mb-4">Edit Daily Offer</h2>
+      <form onSubmit={onSubmit}>
+        {/* Header Fields */}
+        <div className="row mb-4">
+          {['small', 'title', 'subTitle'].map(k => (
+            <div key={k} className="col-md-4 mb-3">
+              <label className="form-label text-capitalize fw-bold">{k}</label>
+              <input
+                type="text"
+                className="form-control"
+                value={form[k]}
+                onChange={e => updateField(k, e.target.value)}
+                required
+              />
+            </div>
+          ))}
+        </div>
 
-        {/* offers */}
-        <h3 className="mt-4">Offers</h3>
-        {form.offers.map((o,i)=>(
-          <div key={i} className="col-12 border p-3 mb-3 rounded">
-            <h5>Offer #{i+1}</h5>
-            <div className="row g-3">
-              {/* image */}
+        {/* Offers */}
+        <h4 className="mb-3">Offers</h4>
+        {form.offers.map((o, i) => (
+          <div key={i} className="border rounded p-3 mb-4">
+            <h5 className="mb-3">Offer #{i + 1}</h5>
+            <div className="row g-3 align-items-start">
+              {/* Image Preview + File Upload */}
               <div className="col-md-3">
-                <label className="form-label">Image</label>
+                <label className="form-label fw-bold">Image</label>
                 {o.img && !files[i] && (
                   <img
-                    src={`http://localhost:5000/${o.img}`}
-                    className="img-fluid mb-2"
+                    src={`http://localhost:5000${o.img}`}
+                    alt={`Offer ${i + 1}`}
+                    className="img-fluid rounded mb-2"
                   />
                 )}
                 <input
                   type="file"
                   className="form-control"
-                  onChange={e=>pickFile(i,e.target.files[0])}
+                  onChange={e => pickFile(i, e.target.files[0])}
                 />
               </div>
-              {['discount','title','desc'].map(k=>(
-                <div key={k} className="col-md-3">
-                  <label className="form-label text-capitalize">{k}</label>
-                  <input
-                    className="form-control"
-                    value={o[k]}
-                    onChange={e=>updateOffer(i,k,e.target.value)}
-                    required
-                  />
+
+              {/* Offer Details */}
+              <div className="col-md-9">
+                <div className="row g-3">
+                  {['discount', 'title', 'desc'].map(k => (
+                    <div key={k} className="col-md-4">
+                      <label className="form-label text-capitalize fw-bold">{k}</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={o[k]}
+                        onChange={e => updateOffer(i, k, e.target.value)}
+                        required
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         ))}
 
-        {/* actions */}
-        <h3 className="mt-4">Popup Actions</h3>
-        {form.actions.map((a,i)=>(
-          <div key={i} className="col-md-4">
-            <label className="form-label">Action #{i+1} Icon</label>
-            <input
-              className="form-control mb-1"
-              value={a.icon}
-              onChange={e=>updateAction(i,'icon',e.target.value)}
-              placeholder="e.g. fas fa-shopping-basket"
-              required
-            />
-            <label className="form-label">Action #{i+1} URL</label>
-            <input
-              className="form-control"
-              value={a.url}
-              onChange={e=>updateAction(i,'url',e.target.value)}
-              placeholder="#"
-            />
-          </div>
-        ))}
+        {/* Actions */}
+        <h4 className="mb-3">Popup Actions</h4>
+        <div className="row g-3">
+          {form.actions.map((a, i) => (
+            <div key={i} className="col-md-6 d-flex align-items-center">
+              <div className="me-3">
+                <i className={`${a.icon} fs-3`}></i>
+              </div>
+              <div className="flex-grow-1">
+                <label className="form-label">Action #{i + 1} URL</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={a.url}
+                  onChange={e => {
+                    const updated = [...form.actions];
+                    updated[i] = { ...updated[i], url: e.target.value };
+                    setForm(f => ({ ...f, actions: updated }));
+                  }}
+                  placeholder="https://example.com"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
 
-        <div className="col-12 text-end">
-          <button className="btn btn-success">Save Daily Offer</button>
+        {/* Submit Button */}
+        <div className="mt-4 text-end">
+          <button type="submit" className="btn btn-success px-4">
+            Save Daily Offer
+          </button>
         </div>
       </form>
     </div>
-  )
+  );
 }
