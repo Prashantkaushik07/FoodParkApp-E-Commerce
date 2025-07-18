@@ -32,7 +32,7 @@ const io = new Server(server, {
   cors: { origin: 'http://localhost:5173', methods: ['GET','POST','PUT','DELETE'] }
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000; // ✅ Use Render-provided PORT env variable
 
 // Ensure upload directories exist
 const UPLOAD_ROOT    = path.join(process.cwd(), 'uploads');
@@ -109,6 +109,7 @@ app.use((req, res) => {
 });
 
 // Start server with Socket.io
-server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+// ✅ Changed to bind 0.0.0.0 (for Render) instead of localhost
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
