@@ -7,6 +7,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url'; // ✅ Added for __dirname in ES Modules
 
 import adminRoutes               from './routes/adminRoutes.js';
 import sliderRoutes              from './routes/sliderRoutes.js';
@@ -29,10 +30,14 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: 'http://localhost:5173', methods: ['GET','POST','PUT','DELETE'] }
+  cors: { origin: process.env.FRONTEND_URL || 'http://localhost:5173', methods: ['GET','POST','PUT','DELETE'] } // ✅ Use env var for frontend URL in CORS
 });
 
-const PORT = process.env.PORT || 5000; // ✅ Use Render-provided PORT env variable
+const PORT = process.env.PORT || 5000; // ✅ Use Render-provided PORT
+
+// ✅ Fix __dirname for ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Ensure upload directories exist
 const UPLOAD_ROOT    = path.join(process.cwd(), 'uploads');
@@ -47,7 +52,7 @@ connectDB();
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // ✅ Use env var here too
   methods: ['GET','POST','PUT','DELETE'],
   credentials: true
 }));
@@ -103,13 +108,20 @@ app.use('/api/admin/slider', (req, res, next) => {
   io.emit('statsUpdate', { section: 'slider', metrics });
 });
 
-// Optional 404 handler
+// ✅ Serve React frontend build (for fullstack deploy)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// ✅ Catch-all route for React Router (SPA fallback)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Optional 404 handler (API-only)
 app.use((req, res) => {
   res.status(404).json({ message: 'Not found' });
 });
 
 // Start server with Socket.io
-// ✅ Changed to bind 0.0.0.0 (for Render) instead of localhost
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
+  console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
 });
