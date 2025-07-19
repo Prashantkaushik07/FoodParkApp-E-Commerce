@@ -1,8 +1,13 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';  // Import Routes and Route from react-router-dom
+import { Routes, Route, Outlet } from 'react-router-dom';
 
-import Topbar from './components/Topbar';
-import Navbar from './components/Navbar';
+// import Topbar from './components/Topbar';
+import Header from './components/Header';
+// import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import ScrollToTopButton from './components/ScrollToTopButton';
+
+// Public page components
 import BannerSlider from './components/BannerSlider';
 import WhyChooseUs from './components/WhyChooseUs';
 import DailyOffer from './components/DailyOffer';
@@ -12,43 +17,48 @@ import DownloadApp from './components/DownloadApp';
 import TestimonialSection from './components/Testimonial';
 import CounterSection from './components/CounterSection';
 import BlogSection from './components/BlogSection';
-import Footer from './components/Footer';
-import ScrollToTopButton from './components/ScrollToTopButton';
 
-// Import Admin components
-import AdminDashboard from './components/Admin/AdminDashboard';  // Admin dashboard for managing sliders
-import AdminLogin from './components/Admin/AdminLogin';  // Admin login page
-import Sidebar from './components/Admin/Sidebar';
+// Admin components
+import AdminDashboard from './components/Admin/AdminDashboard';
+import AdminLogin from './components/Admin/AdminLogin';
+import PrivateRoute from './components/Admin/PrivateRoute';
 
-// Import PrivateRoute for protecting admin pages
-import PrivateRoute from './components/Admin/PrivateRoute';  // Correct import path for PrivateRoute
+function PublicLayout() {
+  return (
+    <>
+      {/* <Topbar /> */}
+      <Header />
+      {/* <Navbar /> */}
+      <Outlet /> {/* Nested public routes will render here */}
+      <Footer />
+      <ScrollToTopButton />
+    </>
+  );
+}
 
 function App() {
   return (
     <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={
-        <>
-          <Topbar />
-          <Navbar />
-          <BannerSlider />
-          <WhyChooseUs />
-          <DailyOffer />
-          <MenuItems />
-          <TeamSection />
-          <DownloadApp />
-          <TestimonialSection />
-          <CounterSection />
-          <BlogSection />
-          <Footer />
-          <ScrollToTopButton />
-        </>
-      } />
-        
-      {/* Admin Routes */}
-      <Route path="/admin/login" element={<AdminLogin />} />
+      {/* Public Routes with Header/Footer */}
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={
+          <>
+            <BannerSlider />
+            <WhyChooseUs />
+            <DailyOffer />
+            <MenuItems />
+            <TeamSection />
+            <DownloadApp />
+            <TestimonialSection />
+            <CounterSection />
+            <BlogSection />
+          </>
+        } />
+        {/* You can add more public pages here */}
+      </Route>
 
-      {/* Protected Admin Route */}
+      {/* Admin Routes without Header/Footer */}
+      <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/admin/*" element={
         <PrivateRoute>
           <AdminDashboard />

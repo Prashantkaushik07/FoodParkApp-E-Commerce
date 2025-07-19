@@ -1,180 +1,191 @@
-// src/components/Header.jsx
-import React, { useState, useEffect } from 'react'
-import { Link, NavLink }          from 'react-router-dom'
-import axios                       from 'axios'
-import './Header.css'              // if you need any small overrides
+import React, { useState, useEffect } from 'react';
+import { Link, NavLink } from 'react-router-dom';
+import axios from 'axios';
+
 
 export default function Header() {
-  const [cfg, setCfg] = useState(null)
-  const [searchOpen, setSearchOpen] = useState(false)
+  const [cfg, setCfg] = useState(null);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     axios.get('/api/header-settings')
-      .then(res => setCfg(res.data.settings || res.data))
-      .catch(err => console.error(err))
-  }, [])
+      .then(({ data }) => setCfg(data.settings || data))
+      .catch(console.error);
+  }, []);
 
-  if (!cfg) return null
+  if (!cfg) return null;
+
   const {
     topbar,
     social,
-    menuItems,
-    pagesDropdown = [],
-    searchPlaceholder = 'Search…',
+    menuItems = [],
+    searchPlaceholder = 'Search . . .',
     cartCount = 0,
     userLink = '/signin',
     reservation,
-  } = cfg
+    logo = '/images/logo.png'
+  } = cfg;
 
   return (
     <>
-      {/* TOPBAR */}
-      <section className="fp__topbar bg-warning text-white py-1">
-        <div className="container d-flex align-items-center justify-content-between">
-          <ul className="fp__topbar_info list-unstyled d-flex mb-0">
-            <li className="me-4">
-              <a className="text-white" href={`mailto:${topbar.email}`}>
-                <i className="fas fa-envelope me-1" /> {topbar.email}
-              </a>
-            </li>
-            <li>
-              <a className="text-white" href={`tel:${topbar.phone}`}>
-                <i className="fas fa-phone-alt me-1" /> {topbar.phone}
-              </a>
-            </li>
-          </ul>
-          <ul className="topbar_icon list-unstyled d-flex mb-0">
-            {social.map((s,i) => (
-              <React.Fragment key={i}>
-                <li className="px-2">
-                  <a className="text-white" href={s.url} target="_blank" rel="noreferrer">
-                    <i className={s.iconClass} />
+      {/* =============================
+          TOPBAR START
+      ============================== */}
+      <section className="fp__topbar">
+        <div className="container">
+          <div className="row">
+            <div className="col-xl-6 col-md-8">
+              <ul className="fp__topbar_info d-flex flex-wrap">
+                <li>
+                  <a href={`mailto:${topbar.email}`}>
+                    <i className="fas fa-envelope"></i> {topbar.email}
                   </a>
                 </li>
-                {i < social.length - 1 && <li className="border-start border-white mx-2 h-100" />}
-              </React.Fragment>
-            ))}
-          </ul>
+                <li>
+                  <a href={`tel:${topbar.phone}`}>
+                    <i className="fas fa-phone-alt"></i> {topbar.phone}
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div className="col-xl-6 col-md-4 d-none d-md-block">
+              <ul className="topbar_icon d-flex flex-wrap">
+                {social.map((s, i) => (
+                  <li key={i}>
+                    <a href={s.url} target="_blank" rel="noreferrer">
+                      <i className={s.iconClass}></i>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
       </section>
+      {/* =============================
+          TOPBAR END
+      ============================== */}
 
-      {/* MAIN NAV */}
-      <nav className="navbar navbar-expand-lg main_menu shadow-sm">
+      {/* =============================
+          MENU START
+      ============================== */}
+      <nav className="navbar navbar-expand-lg main_menu">
         <div className="container">
           {/* Logo */}
-          <Link className="navbar-brand me-4" to="/">
-            <img src="/images/logo.png" alt="Logo" className="img-fluid" />
+          <Link className="navbar-brand" to="/">
+            <img src={logo} alt="FoodPark" className="img-fluid" />
           </Link>
 
-          {/* Hamburger for mobile */}
+          {/* Mobile Toggle */}
           <button
             className="navbar-toggler"
             type="button"
             data-bs-toggle="collapse"
             data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
           >
-            <i className="fas fa-bars" />
+            <i className="far fa-bars"></i>
           </button>
 
           <div className="collapse navbar-collapse" id="navbarNav">
-            {/* Left nav links */}
+            {/* Main Menu */}
             <ul className="navbar-nav m-auto">
-              {menuItems.map((item, idx) => (
-                <li className="nav-item" key={idx}>
-                  <NavLink
-                    to={item.to}
-                    className="nav-link"
-                    activeClassName="active"
-                  >
-                    {item.label}
-                  </NavLink>
-                </li>
-              ))}
-
-              {/* Pages dropdown */}
-              {pagesDropdown.length > 0 && (
-                <li className="nav-item dropdown">
-                  <span
-                    className="nav-link dropdown-toggle"
-                    role="button"
-                    data-bs-toggle="dropdown"
-                  >
-                    Pages
-                  </span>
-                  <ul className="dropdown-menu">
-                    {pagesDropdown.map((p,i) => (
-                      <li key={i}>
-                        <Link className="dropdown-item" to={p.url}>
-                          {p.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
+              {menuItems.map((item, idx) =>
+                item.children && item.children.length > 0 ? (
+                  <li className="nav-item" key={idx}>
+                    <a className="nav-link" href="#">
+                      {item.label} <i className="far fa-angle-down"></i>
+                    </a>
+                    <ul className="droap_menu">
+                      {item.children.map((child, cidx) => (
+                        <li key={cidx}>
+                          <Link to={child.to}>{child.label}</Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ) : (
+                  <li className="nav-item" key={idx}>
+                    <NavLink
+                      to={item.to}
+                      className={({ isActive }) =>
+                        `nav-link ${isActive ? 'active' : ''}`
+                      }
+                      aria-current={item.to === '/' ? 'page' : undefined}
+                    >
+                      {item.label}
+                    </NavLink>
+                  </li>
+                )
               )}
             </ul>
 
-            {/* Right icons/button */}
-            <ul className="list-unstyled d-flex mb-0 align-items-center">
+            {/* Menu Icons */}
+            <ul className="menu_icon d-flex flex-wrap">
               {/* Search */}
-              <li className="me-3 position-relative">
+              <li>
                 <button
-                  className="btn btn-link p-0 text-dark"
-                  onClick={() => setSearchOpen(open => !open)}
+                  type="button"
+                  className="menu_search"
+                  onClick={() => setSearchOpen(!searchOpen)}
                 >
-                  <i className="fas fa-search" />
+                  <i className="far fa-search"></i>
                 </button>
-                {searchOpen && (
-                  <div className="position-absolute bg-white p-3 shadow-sm" style={{ top: '2rem', right: 0, zIndex: 1000 }}>
-                    <form onSubmit={e=>e.preventDefault()}>
-                      <div className="input-group">
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder={searchPlaceholder}
-                        />
-                        <button className="btn btn-primary" type="submit">
-                          Go
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                )}
+
+                <div className={`fp__search_form ${searchOpen ? 'active' : ''}`}>
+                  <form onSubmit={(e) => e.preventDefault()}>
+                    <span
+                      className="close_search"
+                      onClick={() => setSearchOpen(false)}
+                    >
+                      <i className="far fa-times"></i>
+                    </span>
+                    <input
+                      type="text"
+                      placeholder={searchPlaceholder}
+                    />
+                    <button type="submit">search</button>
+                  </form>
+                </div>
               </li>
 
               {/* Cart */}
-              <li className="me-3 position-relative">
-                <Link to="/cart" className="text-dark">
-                  <i className="fas fa-shopping-basket" />
-                  {cartCount > 0 && (
-                    <span className="badge bg-danger rounded-circle position-absolute" style={{ top: '-0.5rem', right: '-0.5rem' }}>
-                      {cartCount}
-                    </span>
-                  )}
-                </Link>
+              <li>
+                <a className="cart_icon" href="#">
+                  <i className="fas fa-shopping-basket"></i>
+                  {cartCount > 0 && <span>{cartCount}</span>}
+                </a>
               </li>
 
               {/* User */}
-              <li className="me-4">
-                <Link to={userLink} className="text-dark">
-                  <i className="fas fa-user" />
+              <li>
+                <Link to={userLink}>
+                  <i className="fas fa-user"></i>
                 </Link>
               </li>
 
               {/* Reservation */}
-              <li>
-                <button
-                  className="btn btn-warning text-white"
-                  data-bs-toggle="modal"
-                  data-bs-target="#staticBackdrop"
-                >
-                  {reservation.text}
-                </button>
-              </li>
+              {reservation?.text && (
+                <li>
+                  <a
+                    className="common_btn"
+                    href={reservation.url}
+                    data-bs-toggle="modal"
+                    data-bs-target="#staticBackdrop"
+                  >
+                    {reservation.text}
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
         </div>
       </nav>
+      {/* =============================
+          MENU END
+      ============================== */}
     </>
-  )
+  );
 }

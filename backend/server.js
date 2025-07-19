@@ -7,7 +7,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
-import { fileURLToPath } from 'url'; // ✅ For __dirname in ES Modules
 
 import adminRoutes               from './routes/adminRoutes.js';
 import sliderRoutes              from './routes/sliderRoutes.js';
@@ -30,14 +29,10 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: process.env.FRONTEND_URL || 'http://localhost:5173', methods: ['GET','POST','PUT','DELETE'] } // ✅ Use env var for frontend URL in CORS
+  cors: { origin: 'http://localhost:5173', methods: ['GET','POST','PUT','DELETE'] }
 });
 
-const PORT = process.env.PORT || 5000; // ✅ Use Render or Vercel-provided PORT
-
-// ✅ Fix __dirname for ES Modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const PORT = process.env.PORT || 5000;
 
 // Ensure upload directories exist
 const UPLOAD_ROOT    = path.join(process.cwd(), 'uploads');
@@ -52,7 +47,7 @@ connectDB();
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // ✅ Use env var here too
+  origin: 'http://localhost:5173',
   methods: ['GET','POST','PUT','DELETE'],
   credentials: true
 }));
@@ -108,25 +103,12 @@ app.use('/api/admin/slider', (req, res, next) => {
   io.emit('statsUpdate', { section: 'slider', metrics });
 });
 
-// ✅ Serve React frontend build (for fullstack deploy)
-app.use(express.static(path.join(__dirname, 'public')));
-
-// ✅ Catch-all route for React Router (SPA fallback)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Optional 404 handler (API-only)
+// Optional 404 handler
 app.use((req, res) => {
   res.status(404).json({ message: 'Not found' });
 });
 
-// ✅ Start server only if NOT in Vercel Serverless environment
-if (!process.env.VERCEL) {
-  server.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
-  });
-}
-
-// ✅ Export app for Vercel Serverless
-export default app;
+// Start server with Socket.io
+server.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});

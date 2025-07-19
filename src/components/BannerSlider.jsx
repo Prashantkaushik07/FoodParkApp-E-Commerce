@@ -42,28 +42,38 @@ export default function BannerSlider() {
   }
 
   return (
-    <section
-      className="fp__banner"
-      style={{ background: 'url(images/banner_bg.jpg) center/cover no-repeat' }}
-      aria-label="Banner Slider Section"
-    >
-      <div className="fp__banner_overlay">
-        <Slider {...settings} className="banner_slider">
+  <section
+    className="fp__banner"
+    style={{ background: 'url(images/banner_bg.jpg)' }}
+    aria-label="Banner Slider Section"
+  >
+    <div className="fp__banner_overlay">
+      <div className="row banner_slider">
+        <Slider {...settings}>
           {slides.map(slider => (
             <div key={slider._id} className="col-12">
               <div className="fp__banner_slider">
                 <div className="container">
-                  <div className="row align-items-center">
+                  <div className="row">
                     {/* Image on the LEFT */}
                     <div className="col-xl-5 col-md-5 col-lg-5">
-                      <div className="fp__banner_img wow fadeInLeft" data-wow-duration="1s">
-                        <div className="img position-relative">
+                      <div
+                        className="fp__banner_img wow fadeInLeft"
+                        data-wow-duration="1s"
+                      >
+                        <div className="img">
                           <img
                             src={`http://localhost:5000/${slider.img}`}
-                            alt={`Slide ${slider._id}`}
-                            className="img-fluid w-100 rounded-circle"
+                            alt={slider.text}
+                            className="img-fluid w-100"
                           />
-                          <span className="position-absolute top-0 end-0 bg-orange text-white p-2 rounded-start">
+                          <span
+                            style={{
+                              backgroundImage: 'url(images/offer_shapes.png)',
+                              backgroundRepeat: 'no-repeat',
+                              backgroundSize: 'cover'
+                            }}
+                          >
                             {slider.discount}
                           </span>
                         </div>
@@ -71,8 +81,11 @@ export default function BannerSlider() {
                     </div>
 
                     {/* Text on the RIGHT */}
-                    <div className="col-xl-5 col-md-7 col-lg-6 offset-xl-1">
-                      <div className="fp__banner_text wow fadeInRight" data-wow-duration="1s">
+                    <div className="col-xl-5 col-md-7 col-lg-6">
+                      <div
+                        className="fp__banner_text wow fadeInRight"
+                        data-wow-duration="1s"
+                      >
                         <h1>{slider.text}</h1>
                         <h3>{slider.subtitle}</h3>
                         <p>{slider.description}</p>
@@ -85,7 +98,6 @@ export default function BannerSlider() {
                         </ul>
                       </div>
                     </div>
-
                   </div>
                 </div>
               </div>
@@ -93,6 +105,8 @@ export default function BannerSlider() {
           ))}
         </Slider>
       </div>
-    </section>
-  );
+    </div>
+  </section>
+);
+
 }
